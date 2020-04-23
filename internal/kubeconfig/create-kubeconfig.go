@@ -7,9 +7,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func CreateKubeconfigYAMLForUser(kc kubernetes.Interface, clusterName, clusterControlPlaceAddress, username string) (kubeconfigYAML string) {
+func CreateKubeconfigYAMLForUser(kc kubernetes.Interface, clusterName, clusterControlPlaceAddress, username string,
+	groups []string) (kubeconfigYAML string) {
 	priv, privPem := createRsaPrivateKeyPem()
-	certificatePemBytes := getSignedCertificateForUser(kc, username, priv)
+	certificatePemBytes := getSignedCertificateForUser(kc, username, groups, priv)
 	crtBase64 := base64.StdEncoding.EncodeToString(certificatePemBytes)
 	privateKeyBase64 := base64.StdEncoding.EncodeToString(privPem)
 
@@ -37,7 +38,6 @@ users:
     user:
       client-certificate-data: %s
       client-key-data: %s`
-
 
 	return fmt.Sprintf(certificate_tpl,
 		clusterName,
