@@ -22,7 +22,7 @@ import (
 
 func getSignedCertificateForUser(kc kubernetes.Interface, username string, groups []string,
 	privateKey *rsa.PrivateKey) (certificatePemBytes []byte) {
-	_, csrPemByte := createCSR(username, privateKey)
+	_, csrPemByte := createCSR(username, groups, privateKey)
 	certsClients := kc.CertificatesV1beta1()
 	csrObjectName := "CSR_FOR_" + username + time.Now().String()
 
@@ -106,10 +106,11 @@ func createRsaPrivateKeyPem() (privateKey *rsa.PrivateKey, privPemBytes []byte) 
 	return
 }
 
-func createCSR(username string, privateKey *rsa.PrivateKey) (csrBytes []byte, csrPemBytes []byte) {
+func createCSR(username string, groups []string, privateKey *rsa.PrivateKey) (csrBytes []byte, csrPemBytes []byte) {
 	template := x509.CertificateRequest{
 		Subject: pkix.Name{
-			CommonName: username,
+			CommonName:   username,
+			Organization: groups,
 		},
 		SignatureAlgorithm: x509.SHA256WithRSA,
 	}
